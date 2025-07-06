@@ -27,13 +27,14 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 
 ### フェーズ2: Remix アプリケーション開発
 - [x] Remix アプリケーションの初期化
-- [x] Biome の設定とスクリプトの追加
+- [x] Biome の設定とスクリプトの追加（ESLint から移行）
 - [x] TypeScript の設定（厳格な型チェック設定）
 - [x] 基本的なルーティング設定（Home、About ページ）
+- [x] ヘルスチェックエンドポイントの実装（/api/health, /api/ready, /api/liveness）
+- [ ] Azure App Service 用の本番 Dockerfile 作成
 - [ ] データベース接続の準備（Prisma セットアップ）
 - [ ] 簡単な CRUD 操作の実装（Todo リストなど）
 - [ ] エラーハンドリングの実装
-- [ ] ヘルスチェックエンドポイントの実装
 
 ### フェーズ3: ネットワークインフラ構築
 - [ ] Azure VNet の作成（Pulumi）
@@ -163,6 +164,26 @@ docker compose logs -f
 docker compose exec ss-azure-dev bash
 ```
 
+## 現在の実装状況
+
+### 実装済み機能
+- ✅ Docker 開発環境（Node.js 22 + pnpm）
+- ✅ Remix SSR アプリケーション
+- ✅ TypeScript + Biome によるコード品質管理
+- ✅ 基本ルーティング（Home、About ページ）
+- ✅ ヘルスチェック API エンドポイント
+  - `/api/health` - アプリケーション健全性の詳細情報
+  - `/api/ready` - 準備状態チェック（Azure App Service readiness probe 用）
+  - `/api/liveness` - 生存確認（Azure App Service liveness probe 用）
+
+### API エンドポイント
+
+| エンドポイント | 説明 | レスポンス例 |
+|--------------|------|------------|
+| `/api/health` | 詳細な健全性情報 | `{ status: "healthy", timestamp: "...", uptime: 123.45, memory: {...} }` |
+| `/api/ready` | 準備状態チェック | `{ ready: true, timestamp: "...", checks: {...} }` |
+| `/api/liveness` | 生存確認 | `{ status: "alive", timestamp: "..." }` |
+
 ## プロジェクト構成
 
 ```
@@ -170,42 +191,28 @@ ss-azure/
 ├── app/                    # Remix アプリケーション
 │   ├── app/               # Remix アプリケーションコード
 │   │   ├── routes/        # ルート定義
+│   │   │   ├── _index.tsx     # ホームページ
+│   │   │   ├── about.tsx      # About ページ
+│   │   │   ├── api.health.ts  # ヘルスチェック API
+│   │   │   ├── api.ready.ts   # 準備状態 API
+│   │   │   └── api.liveness.ts # 生存確認 API
 │   │   ├── components/    # React コンポーネント
 │   │   ├── lib/           # ユーティリティ関数
 │   │   └── styles/        # スタイルシート
 │   ├── public/            # 静的アセット
-│   ├── prisma/            # Prisma スキーマとマイグレーション
-│   ├── tests/             # テストファイル
+│   ├── prisma/            # Prisma スキーマとマイグレーション（未実装）
 │   ├── package.json       # 依存関係
-│   ├── remix.config.js    # Remix 設定
+│   ├── vite.config.ts     # Vite 設定
 │   ├── biome.json         # Biome 設定
 │   └── tsconfig.json      # TypeScript 設定
 │
-├── infra/                 # Pulumi インフラコード
+├── infra/                 # Pulumi インフラコード（未実装）
 │   ├── azure/             # Azure リソース定義
-│   │   ├── appService.ts  # App Service 定義
-│   │   ├── cdn.ts         # CDN 設定
-│   │   └── keyVault.ts    # Key Vault 設定
 │   ├── aws/               # AWS リソース定義
-│   │   ├── rds.ts         # RDS インスタンス
-│   │   ├── vpc.ts         # VPC 設定
-│   │   └── security.ts    # セキュリティグループ
-│   ├── index.ts           # メインエントリポイント
-│   ├── package.json       # 依存関係
-│   ├── Pulumi.yaml        # Pulumi プロジェクト設定
-│   ├── Pulumi.dev.yaml    # 開発環境設定
-│   └── biome.json         # Biome 設定
+│   └── index.ts           # メインエントリポイント
 │
-├── .github/               # GitHub Actions
-│   └── workflows/         # ワークフロー定義
-│       ├── ci.yml         # CI パイプライン
-│       └── deploy.yml     # デプロイパイプライン
-│
-├── docs/                  # ドキュメント
-│   ├── architecture.md    # アーキテクチャ説明
-│   ├── deployment.md      # デプロイ手順
-│   └── troubleshooting.md # トラブルシューティング
-│
+├── Dockerfile             # 開発環境用 Docker イメージ
+├── compose.yml            # Docker Compose 設定
 ├── CLAUDE.md              # Claude 用プロジェクトコンテキスト
 ├── README.md              # このファイル
 └── .gitignore             # Git 除外設定

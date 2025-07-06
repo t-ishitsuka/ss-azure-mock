@@ -38,8 +38,14 @@ WORKDIR /workspace
 RUN corepack enable && \
     corepack prepare pnpm@latest --activate
 
-# 作業ディレクトリの所有権を node ユーザーに変更
-RUN chown -R node:node /workspace
+# node ユーザーのホームディレクトリとツール用ディレクトリを作成して権限を設定
+RUN mkdir -p /home/node/.pulumi && \
+    mkdir -p /home/node/.azure && \
+    mkdir -p /home/node/.aws && \
+    mkdir -p /home/node/.local/share/pnpm && \
+    mkdir -p /home/node/.cache && \
+    chown -R node:node /home/node && \
+    chown -R node:node /workspace
 
 # 環境変数の設定
 ENV PATH="/home/node/.pulumi/bin:${PATH}"

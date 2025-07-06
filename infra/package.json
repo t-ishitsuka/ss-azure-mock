@@ -1,0 +1,22 @@
+{
+  "name": "ss-azure-infra",
+  "version": "1.0.0",
+  "description": "Infrastructure as Code for SS Azure project",
+  "main": "index.ts",
+  "scripts": {
+    "preview": "pulumi preview",
+    "up": "pulumi up",
+    "destroy": "pulumi destroy",
+    "biome:check": "biome check .",
+    "biome:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@pulumi/azure-native": "^2.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.0.6",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

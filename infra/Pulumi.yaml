@@ -1,0 +1,6 @@
+name: ss-azure-infra
+runtime:
+  name: nodejs
+  options:
+    typescript: true
+description: Infrastructure for SS Azure project - Remix on Azure with AWS RDS

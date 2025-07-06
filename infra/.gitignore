@@ -1,0 +1,37 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Pulumi
+Pulumi.*.yaml
+!Pulumi.yaml
+.pulumi/
+*.pyc
+
+# TypeScript
+bin/
+*.js
+*.js.map
+*.d.ts
+
+# 環境変数
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ログ
+*.log
+logs/
