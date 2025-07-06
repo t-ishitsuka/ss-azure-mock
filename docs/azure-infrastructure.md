@@ -26,13 +26,13 @@ graph TB
     end
 
     %% 接続
-    GH -->|1. Push to main/develop| GA
-    GA -->|2. Build & Push Image| ACR
-    GA -->|3. Restart Container| ACI
-    ACR -->|4. Pull Image| ACI
-    ACI -->|5. Send Logs| LAW
-    LAW -->|6. Data Source| AI
-    USER -->|7. HTTPS Request| ACI
+    GH -->|Push to main/develop| GA
+    GA -->|Build and Push Image| ACR
+    GA -->|Restart Container| ACI
+    ACR -->|Pull Image| ACI
+    ACI -->|Send Logs| LAW
+    LAW -->|Data Source| AI
+    USER -->|HTTPS Request| ACI
 
     %% スタイリング
     classDef github fill:#24292e,stroke:#fff,color:#fff
