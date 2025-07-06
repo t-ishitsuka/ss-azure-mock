@@ -16,9 +16,11 @@
 
 - **フロントエンド/バックエンド**: Remix (TypeScript) - SSR のみ
 - **インフラストラクチャ**: Pulumi (TypeScript)
-- **ホスティング**: Azure App Service
-- **データベース**: AWS RDS (PostgreSQL)
+- **ホスティング**: Azure Container Instances
+- **コンテナレジストリ**: Azure Container Registry
+- **データベース**: AWS RDS (PostgreSQL) ※未実装
 - **Linter/Formatter**: Biome
+- **CI/CD**: GitHub Actions
 - **環境**: staging のみ（本番環境なし）
 
 ## ディレクトリ構成
@@ -85,13 +87,20 @@ npx @biomejs/biome check --apply ./
 
 ### ネットワーク構成（本番想定）
 
-このサンプルでは AWS と Azure 間の通信をセキュアに行うことが主目的のため、以下の構成を実装します：
+このサンプルでは AWS と Azure 間の通信をセキュアに行うことが主目的のため、以下の構成を実装予定です：
 
-- **Azure 側**: VNet 内に App Service を配置（VNet Integration）
+- **Azure 側**: VNet 内に Container Instances を配置（VNet Integration）
 - **AWS 側**: VPC 内に RDS を配置（プライベートサブネット）
 - **接続方法**: Site-to-Site VPN または VNet Peering + Transit Gateway を使用
 - データベース接続文字列は環境変数で管理
 - 通信はすべて内部ネットワーク経由で行う
+
+### 現在の実装状況
+
+- **Azure Container Instances**: パブリック IP でアクセス可能
+- **Azure Container Registry**: GitHub Actions からイメージをプッシュ
+- **CI/CD**: GitHub Actions で自動デプロイ構築済み
+- **監視**: Application Insights と Log Analytics で監視
 
 ### インフラ管理
 
@@ -118,7 +127,8 @@ npx @biomejs/biome check --apply ./
 - DNS 解決の確認
 
 ### アプリケーション
-- App Service のログ確認（Application Insights）
+- Container Instances のログ確認（Application Insights）
+- コンテナの状態確認（Azure Portal または Azure CLI）
 - データベース接続エラーの対処
 - 環境変数の設定確認
 
@@ -198,9 +208,25 @@ pulumi stack
 
 ### ネットワーク接続確認
 ```bash
-# VPN 接続状態の確認（Azure CLI）
+# Container Instances の状態確認
+az container show --name ss-azure-staging-container --resource-group ss-azure-staging-rg
+
+# コンテナのログ確認
+az container logs --name ss-azure-staging-container --resource-group ss-azure-staging-rg
+
+# VPN 接続状態の確認（Azure CLI）※将来実装時
 az network vpn-connection show --name <connection-name> --resource-group <rg-name>
 
-# RDS への接続テスト（App Service のコンソールから）
+# RDS への接続テスト（Container から）※将来実装時
 psql -h <rds-endpoint> -U <username> -d <database> -p 5432
 ```
+
+## GitHub Actions デプロイ
+
+GitHub Actions を使用した自動デプロイが設定されています：
+
+1. `main` または `develop` ブランチへのプッシュでワークフロー起動
+2. Docker イメージのビルドと Azure Container Registry へのプッシュ
+3. Container Instances の自動再起動（オプション）
+
+詳細な設定方法は `docs/github-actions-setup.md` を参照してください。

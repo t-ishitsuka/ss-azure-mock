@@ -6,10 +6,12 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 
 このプロジェクトは以下の構成で実装されています：
 - **フロントエンド/バックエンド**: Remix (TypeScript)
-- **ホスティング**: Azure App Service
-- **データベース**: AWS RDS (PostgreSQL)
+- **ホスティング**: Azure Container Instances
+- **コンテナレジストリ**: Azure Container Registry
+- **データベース**: AWS RDS (PostgreSQL) ※未実装
 - **インフラ管理**: Pulumi (TypeScript)
 - **コード品質**: Biome (Linter/Formatter)
+- **CI/CD**: GitHub Actions
 
 ## 前提条件
 
@@ -31,7 +33,7 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 - [x] TypeScript の設定（厳格な型チェック設定）
 - [x] 基本的なルーティング設定（Home、About ページ）
 - [x] ヘルスチェックエンドポイントの実装（/api/health, /api/ready, /api/liveness）
-- [ ] Azure App Service 用の本番 Dockerfile 作成
+- [x] Azure Container Instances 用の本番 Dockerfile 作成
 - [ ] データベース接続の準備（Prisma セットアップ）
 - [ ] 簡単な CRUD 操作の実装（Todo リストなど）
 - [ ] エラーハンドリングの実装
@@ -50,16 +52,17 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 - [ ] データベースの初期化スクリプト
 - [ ] 接続文字列の生成と環境変数管理
 
-### フェーズ5: Azure App Service 構築
-- [ ] App Service Plan の作成（Pulumi）
-- [ ] App Service の作成と VNet Integration 設定
-- [ ] Application Insights の設定（ログ監視）
-- [ ] 環境変数の設定
-- [ ] デプロイメント設定
+### フェーズ5: Azure Container Instances 構築
+- [x] Container Registry の作成（Pulumi）
+- [x] Container Instances の作成と設定
+- [x] Application Insights の設定（ログ監視）
+- [x] 環境変数の設定
+- [x] GitHub Actions によるデプロイメント設定
 
 ### フェーズ6: デプロイと動作確認
-- [ ] Remix アプリケーションのビルド
-- [ ] Azure App Service へのデプロイ
+- [x] Remix アプリケーションのビルド
+- [x] Azure Container Instances へのデプロイ
+- [x] GitHub Actions セットアップドキュメントの作成
 - [ ] データベース接続の確認
 - [ ] エンドツーエンドの動作テスト
 - [ ] トラブルシューティングドキュメントの作成
@@ -173,8 +176,11 @@ docker compose exec ss-azure-dev bash
 - ✅ 基本ルーティング（Home、About ページ）
 - ✅ ヘルスチェック API エンドポイント
   - `/api/health` - アプリケーション健全性の詳細情報
-  - `/api/ready` - 準備状態チェック（Azure App Service readiness probe 用）
-  - `/api/liveness` - 生存確認（Azure App Service liveness probe 用）
+  - `/api/ready` - 準備状態チェック（Container Instances readiness probe 用）
+  - `/api/liveness` - 生存確認（Container Instances liveness probe 用）
+- ✅ Azure Container Registry へのイメージプッシュ（GitHub Actions）
+- ✅ Azure Container Instances へのデプロイ（Pulumi）
+- ✅ Application Insights によるモニタリング
 
 ### API エンドポイント
 
@@ -204,12 +210,23 @@ ss-azure/
 │   ├── package.json       # 依存関係
 │   ├── vite.config.ts     # Vite 設定
 │   ├── biome.json         # Biome 設定
-│   └── tsconfig.json      # TypeScript 設定
+│   ├── tsconfig.json      # TypeScript 設定
+│   └── Dockerfile.production # 本番用 Docker イメージ
 │
-├── infra/                 # Pulumi インフラコード（未実装）
+├── infra/                 # Pulumi インフラコード
 │   ├── azure/             # Azure リソース定義
-│   ├── aws/               # AWS リソース定義
+│   │   ├── index.ts       # Azure リソース（ACR、Container Instances など）
+│   │   └── config.ts      # Azure 設定
+│   ├── aws/               # AWS リソース定義（未実装）
 │   └── index.ts           # メインエントリポイント
+│
+├── .github/
+│   └── workflows/
+│       └── deploy.yml     # GitHub Actions デプロイワークフロー
+│
+├── docs/
+│   ├── github-actions-setup.md  # GitHub Actions セットアップガイド
+│   └── azure-infrastructure.md  # Azure インフラ構成図
 │
 ├── Dockerfile             # 開発環境用 Docker イメージ
 ├── compose.yml            # Docker Compose 設定
