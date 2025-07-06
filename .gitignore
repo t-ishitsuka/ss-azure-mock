@@ -1,0 +1,52 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# 環境変数
+.env
+.env.local
+.env.staging
+.env.production
+
+# ビルド出力
+dist/
+build/
+out/
+.cache/
+
+# Remix
+app/.cache/
+app/build/
+app/public/build/
+
+# Pulumi
+infra/Pulumi.*.yaml
+!infra/Pulumi.yaml
+infra/.pulumi/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ログ
+*.log
+logs/
+
+# テスト
+coverage/
+.nyc_output/
+
+# その他
+.tmp/
+temp/

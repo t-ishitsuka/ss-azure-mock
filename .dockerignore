@@ -1,0 +1,47 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 環境変数
+.env
+.env.local
+.env.staging
+.env.production
+
+# ビルド出力
+dist/
+build/
+out/
+.cache/
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+compose.yml
+.dockerignore
+
+# Pulumi
+infra/Pulumi.*.yaml
+infra/.pulumi/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# ドキュメント
+docs/
+*.md
+
+# テスト
+coverage/
+.nyc_output/
