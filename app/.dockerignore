@@ -1,0 +1,39 @@
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store
+
+# 環境変数
+.env
+.env.local
+.env.staging
+.env.production
+
+# ビルド出力
+build/
+.cache/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# テスト
+coverage/
+.nyc_output/
+
+# ドキュメント
+*.md
+
+# 開発用 Docker
+Dockerfile
+compose.yml

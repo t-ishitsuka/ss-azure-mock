@@ -1,0 +1,58 @@
+# マルチステージビルド - ビルドステージ
+FROM node:22-alpine AS builder
+
+# pnpm を有効化
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# 作業ディレクトリ
+WORKDIR /app
+
+# 依存関係ファイルをコピー
+COPY package.json pnpm-lock.yaml ./
+
+# 依存関係をインストール
+RUN pnpm install --frozen-lockfile
+
+# アプリケーションファイルをコピー
+COPY . .
+
+# アプリケーションをビルド
+RUN pnpm build
+
+# プロダクションステージ
+FROM node:22-alpine AS production
+
+# pnpm を有効化
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# 必要なパッケージをインストール
+RUN apk add --no-cache libc6-compat
+
+# 非rootユーザーを作成
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001
+
+# 作業ディレクトリ
+WORKDIR /app
+
+# ビルド成果物と必要なファイルをコピー
+COPY --from=builder --chown=nodejs:nodejs /app/build ./build
+COPY --from=builder --chown=nodejs:nodejs /app/public ./public
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=nodejs:nodejs /app/pnpm-lock.yaml ./pnpm-lock.yaml
+
+# 本番用の依存関係のみインストール
+RUN pnpm install --prod --frozen-lockfile
+
+# ユーザーを切り替え
+USER nodejs
+
+# 環境変数
+ENV NODE_ENV=production
+ENV PORT=8080
+
+# ポートを公開
+EXPOSE 8080
+
+# アプリケーション起動
+CMD ["pnpm", "start"]
