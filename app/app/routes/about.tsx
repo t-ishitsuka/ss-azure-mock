@@ -94,6 +94,33 @@ export default function About() {
           </section>
 
           <section className="bg-white p-8 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-semibold mb-4">API エンドポイント</h2>
+            <div className="text-gray-600 space-y-2">
+              <p className="mb-4">Azure App Service のヘルスチェック用エンドポイント：</p>
+              <ul className="space-y-2 font-mono text-sm">
+                <li>
+                  <a href="/api/health" className="text-blue-600 hover:underline">
+                    /api/health
+                  </a>
+                  {" - "}アプリケーションの基本的な健全性チェック
+                </li>
+                <li>
+                  <a href="/api/ready" className="text-blue-600 hover:underline">
+                    /api/ready
+                  </a>
+                  {" - "}アプリケーションの準備状態チェック
+                </li>
+                <li>
+                  <a href="/api/liveness" className="text-blue-600 hover:underline">
+                    /api/liveness
+                  </a>
+                  {" - "}アプリケーションの生存確認
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <section className="bg-white p-8 rounded-lg shadow-lg">
             <h2 className="text-2xl font-semibold mb-4">今後の展開</h2>
             <ul className="text-gray-600 space-y-2">
               <li>• Prisma を使用したデータベース操作の実装</li>
