@@ -158,16 +158,22 @@ cd ../infra && pnpm install
 cd app
 
 # 開発サーバーの起動
-pnpm run dev
+pnpm dev
 
 # ビルド
-pnpm run build
+pnpm build
 
 # Biome でコードをチェック
-pnpm run biome:check
+pnpm biome:check
 
 # Biome でコードを自動修正
-pnpm run biome:fix
+pnpm biome:fix
+
+# TypeScript の型チェック
+pnpm typecheck
+
+# すべてのチェックを実行
+pnpm check
 ```
 
 ### インフラ管理

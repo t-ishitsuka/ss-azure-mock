@@ -26,6 +26,15 @@
       "~/*": ["./app/*"]
     },
 
+    // 追加の型チェックオプション
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+
     // Vite takes care of building everything, not tsc.
     "noEmit": true
   }

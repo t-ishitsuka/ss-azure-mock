@@ -20,16 +20,16 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 
 ## 実装タスク
 
-### フェーズ1: 基本セットアップ
+### フェーズ1: 基本セットアップ ✅
 - [x] Docker 開発環境の構築
 - [x] プロジェクトガイドライン（CLAUDE.md）の作成
-- [ ] プロジェクトの基本ディレクトリ構成を作成
+- [x] プロジェクトの基本ディレクトリ構成を作成
 
 ### フェーズ2: Remix アプリケーション開発
-- [ ] Remix アプリケーションの初期化
-- [ ] Biome の設定とスクリプトの追加
-- [ ] TypeScript の設定
-- [ ] 基本的なルーティング設定（Home、About ページ）
+- [x] Remix アプリケーションの初期化
+- [x] Biome の設定とスクリプトの追加
+- [x] TypeScript の設定（厳格な型チェック設定）
+- [x] 基本的なルーティング設定（Home、About ページ）
 - [ ] データベース接続の準備（Prisma セットアップ）
 - [ ] 簡単な CRUD 操作の実装（Todo リストなど）
 - [ ] エラーハンドリングの実装
@@ -112,19 +112,19 @@ pnpm run dev
 ### アプリケーション開発（コンテナ内で実行）
 ```bash
 # 開発サーバー起動
-pnpm run dev
+pnpm dev
 
 # ビルド
-pnpm run build
+pnpm build
 
 # プロダクションモード起動
-pnpm run start
+pnpm start
 
 # Biome でコードチェック
-pnpm run biome:check
+pnpm biome:check
 
 # Biome で自動修正
-pnpm run biome:fix
+pnpm biome:fix
 ```
 
 ### インフラ管理（コンテナ内で実行）
