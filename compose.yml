@@ -24,6 +24,8 @@ services:
       # pnpm の設定
       PNPM_HOME: /home/node/.local/share/pnpm
       PATH: /home/node/.local/share/pnpm:$PATH
+      # データベース接続（コンテナ内から接続する場合）
+      DATABASE_URL: postgresql://ssuser:development@ss-azure-postgres:5432/ssdb?schema=public
     working_dir: /workspace
     tty: true
     stdin_open: true
@@ -32,6 +34,8 @@ services:
       - "3000:5173"
       # Remix WebSocket (HMR)
       - "8002:8002"
+      # Prisma Studio
+      - "5555:5555"
     networks:
       - ss-azure-network
 

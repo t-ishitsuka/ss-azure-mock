@@ -6,6 +6,9 @@
 - コード内のコメントも日本語で記述する
 - エラーメッセージやログメッセージも可能な限り日本語化する
 - `pulumi up` と `pulumi destroy` で環境の構築・破棄が完結するように実装する
+- **pnpm や npm を使用するコマンドは Docker コンテナ内で実行するため、作業指示として提示すること**
+- **すべての npm, npx コマンドは pnpm, pnpm exec で実行すること**
+- **Docker Compose の設定ファイルは `compose.yml` を使用すること（`docker-compose.yml` ではない）**
 
 ## プロジェクト概要
 
@@ -136,6 +139,11 @@ npx @biomejs/biome check --apply ./
 - Azure/AWS の権限設定確認
 - リソースの依存関係エラーの解決
 - スタック状態の確認とリカバリ
+
+### WSL2 開発環境
+- 詳細なガイドは `docs/wsl2-development.md` を参照
+- WSL2 の IP 確認: `ip addr show eth0 | grep -oP '(?<=inet\s)\d+\.\d+\.\d+\.\d+'`
+- Prisma Studio へのアクセス: `http://<WSL2のIP>:5555`
 
 ## Docker 開発環境
 
