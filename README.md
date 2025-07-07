@@ -27,16 +27,33 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 - [x] プロジェクトガイドライン（CLAUDE.md）の作成
 - [x] プロジェクトの基本ディレクトリ構成を作成
 
-### フェーズ2: Remix アプリケーション開発
+### フェーズ2: Remix アプリケーション開発 ✅
 - [x] Remix アプリケーションの初期化
 - [x] Biome の設定とスクリプトの追加（ESLint から移行）
 - [x] TypeScript の設定（厳格な型チェック設定）
 - [x] 基本的なルーティング設定（Home、About ページ）
 - [x] ヘルスチェックエンドポイントの実装（/api/health, /api/ready, /api/liveness）
 - [x] Azure Container Instances 用の本番 Dockerfile 作成
-- [ ] データベース接続の準備（Prisma セットアップ）
-- [ ] 簡単な CRUD 操作の実装（Todo リストなど）
-- [ ] エラーハンドリングの実装
+- [x] データベース接続の準備（Prisma セットアップ）
+  - [x] Prisma の依存関係インストール
+  - [x] Prisma スキーマ定義（Task モデル）
+  - [x] データベース接続設定（環境変数）
+  - [x] Prisma Client シングルトンユーティリティ作成
+  - [x] 初期マイグレーション実行
+  - [x] Docker Compose に PostgreSQL 追加
+- [x] 簡単な CRUD 操作の実装（タスク管理機能）
+  - [x] タスク一覧表示ページ（`/tasks`）
+  - [x] タスク作成機能
+  - [x] タスク編集機能（`/tasks/:id/edit`）
+  - [x] タスク削除機能
+  - [x] タスク完了状態切り替え機能
+  - [x] 共通レイアウトコンポーネント作成
+- [x] エラーハンドリングの実装
+  - [x] グローバルエラーバウンダリー
+  - [x] 404エラーページ
+  - [x] APIエラーハンドリング（try-catch）
+  - [x] トースト通知コンポーネント
+  - [x] データベースエラーの適切な処理
 
 ### フェーズ3: ネットワークインフラ構築
 - [ ] Azure VNet の作成（Pulumi）
@@ -181,6 +198,20 @@ docker compose exec ss-azure-dev bash
 - ✅ Azure Container Registry へのイメージプッシュ（GitHub Actions）
 - ✅ Azure Container Instances へのデプロイ（Pulumi）
 - ✅ Application Insights によるモニタリング
+- ✅ Prisma ORM セットアップ
+  - PostgreSQL データベース（Docker Compose）
+  - Task モデル定義
+  - マイグレーション実行
+  - Prisma Studio でのデータ管理
+- ✅ タスク管理 CRUD 機能
+  - タスクの作成・読み取り・更新・削除
+  - タスク完了状態の管理
+  - レスポンシブなUI
+- ✅ エラーハンドリング
+  - グローバルエラーバウンダリー
+  - カスタムエラーページ（404、500）
+  - エラー時のトースト通知
+  - データベースエラーの適切な処理
 
 ### API エンドポイント
 
@@ -189,6 +220,15 @@ docker compose exec ss-azure-dev bash
 | `/api/health` | 詳細な健全性情報 | `{ status: "healthy", timestamp: "...", uptime: 123.45, memory: {...} }` |
 | `/api/ready` | 準備状態チェック | `{ ready: true, timestamp: "...", checks: {...} }` |
 | `/api/liveness` | 生存確認 | `{ status: "alive", timestamp: "..." }` |
+
+### ページルート
+
+| ルート | 説明 |
+|-------|------|
+| `/` | ホームページ |
+| `/about` | プロジェクト詳細情報 |
+| `/tasks` | タスク管理（一覧・作成・削除・完了切り替え） |
+| `/tasks/:id/edit` | タスク編集ページ |
 
 ## プロジェクト構成
 
@@ -201,12 +241,24 @@ ss-azure/
 │   │   │   ├── about.tsx      # About ページ
 │   │   │   ├── api.health.ts  # ヘルスチェック API
 │   │   │   ├── api.ready.ts   # 準備状態 API
-│   │   │   └── api.liveness.ts # 生存確認 API
+│   │   │   ├── api.liveness.ts # 生存確認 API
+│   │   │   ├── tasks._index.tsx # タスク一覧ページ
+│   │   │   ├── tasks.$taskId.edit.tsx # タスク編集ページ
+│   │   │   └── $.tsx          # 404エラーページ
 │   │   ├── components/    # React コンポーネント
+│   │   │   ├── layout.tsx    # 共通レイアウト
+│   │   │   ├── error-boundary.tsx # エラーバウンダリー
+│   │   │   └── toast.tsx     # トースト通知
 │   │   ├── lib/           # ユーティリティ関数
+│   │   ├── utils/         # ユーティリティ
+│   │   │   └── db.server.ts  # Prisma Client シングルトン
 │   │   └── styles/        # スタイルシート
 │   ├── public/            # 静的アセット
-│   ├── prisma/            # Prisma スキーマとマイグレーション（未実装）
+│   ├── prisma/            # Prisma スキーマとマイグレーション
+│   │   ├── schema.prisma  # データベーススキーマ定義
+│   │   └── migrations/    # マイグレーションファイル
+│   ├── generated/         # 自動生成ファイル
+│   │   └── prisma/        # Prisma Client
 │   ├── package.json       # 依存関係
 │   ├── vite.config.ts     # Vite 設定
 │   ├── biome.json         # Biome 設定

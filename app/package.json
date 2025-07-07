@@ -13,6 +13,7 @@
     "biome:fix": "biome check --write .",
     "format": "biome format --write .",
     "check": "pnpm run biome:check && pnpm run typecheck",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",

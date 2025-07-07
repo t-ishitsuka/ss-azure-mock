@@ -21,7 +21,10 @@
 - **インフラストラクチャ**: Pulumi (TypeScript)
 - **ホスティング**: Azure Container Instances
 - **コンテナレジストリ**: Azure Container Registry
-- **データベース**: AWS RDS (PostgreSQL) ※未実装
+- **データベース**: 
+  - 開発環境: PostgreSQL (Docker Compose)
+  - 本番環境: AWS RDS (PostgreSQL) ※将来実装予定
+- **ORM**: Prisma
 - **Linter/Formatter**: Biome
 - **CI/CD**: GitHub Actions
 - **環境**: staging のみ（本番環境なし）
@@ -30,19 +33,31 @@
 
 ```
 ss-azure/
-├── app/                 # Remix アプリケーション
-│   ├── app/            # Remix ルートディレクトリ
-│   ├── public/         # 静的アセット
-│   ├── package.json    # アプリケーションの依存関係
-│   ├── remix.config.js # Remix 設定
-│   └── biome.json      # Biome 設定
-├── infra/              # Pulumi インフラコード
-│   ├── index.ts        # メインのインフラ定義
-│   ├── azure/          # Azure リソース定義
-│   ├── aws/            # AWS リソース定義
-│   ├── package.json    # インフラの依存関係
-│   └── biome.json      # Biome 設定
-└── README.md           # プロジェクト説明とタスク一覧
+├── app/                   # Remix アプリケーション
+│   ├── app/              # Remix ルートディレクトリ
+│   │   ├── routes/       # ルート定義
+│   │   ├── components/   # React コンポーネント
+│   │   │   └── layout.tsx    # 共通レイアウト
+│   │   └── utils/        # ユーティリティ
+│   │       └── db.server.ts  # Prisma Client
+│   ├── public/           # 静的アセット
+│   ├── prisma/           # Prisma 関連
+│   │   ├── schema.prisma # データベーススキーマ
+│   │   └── migrations/   # マイグレーション
+│   ├── generated/        # 自動生成ファイル
+│   │   └── prisma/       # Prisma Client
+│   ├── package.json      # アプリケーションの依存関係
+│   ├── remix.config.js   # Remix 設定
+│   └── biome.json        # Biome 設定
+├── infra/                # Pulumi インフラコード
+│   ├── index.ts          # メインのインフラ定義
+│   ├── azure/            # Azure リソース定義
+│   ├── aws/              # AWS リソース定義
+│   ├── package.json      # インフラの依存関係
+│   └── biome.json        # Biome 設定
+├── docs/                 # ドキュメント
+│   └── wsl2-development.md  # WSL2開発ガイド
+└── README.md             # プロジェクト説明とタスク一覧
 
 ```
 
@@ -104,6 +119,8 @@ npx @biomejs/biome check --apply ./
 - **Azure Container Registry**: GitHub Actions からイメージをプッシュ
 - **CI/CD**: GitHub Actions で自動デプロイ構築済み
 - **監視**: Application Insights と Log Analytics で監視
+- **データベース**: PostgreSQL (Docker Compose) + Prisma ORM
+- **CRUD 機能**: タスク管理機能実装済み
 
 ### インフラ管理
 
@@ -194,6 +211,27 @@ pnpm typecheck
 pnpm check
 ```
 
+### Prisma データベース操作
+```bash
+cd app
+
+# Prisma Client の生成
+pnpm exec prisma generate
+
+# マイグレーションの作成と適用（開発環境）
+pnpm exec prisma migrate dev --name <migration-name>
+
+# マイグレーションの適用（本番環境）
+pnpm exec prisma migrate deploy
+
+# Prisma Studio の起動（データ管理UI）
+pnpm exec prisma studio --port 5555 --browser none --hostname 0.0.0.0
+# WSL2環境では http://<WSL2のIP>:5555 でアクセス
+
+# データベースのリセット（開発環境のみ）
+pnpm exec prisma migrate reset
+```
+
 ### インフラ管理
 ```bash
 cd infra
@@ -238,3 +276,48 @@ GitHub Actions を使用した自動デプロイが設定されています：
 3. Container Instances の自動再起動（オプション）
 
 詳細な設定方法は `docs/github-actions-setup.md` を参照してください。
+
+## Prisma セットアップ手順
+
+### 初期セットアップ（完了済み）
+
+1. **依存関係のインストール**
+   ```bash
+   cd /workspace/app
+   pnpm add -D prisma
+   pnpm add @prisma/client
+   ```
+
+2. **Prisma の初期化**
+   ```bash
+   pnpm exec prisma init --datasource-provider postgresql
+   ```
+
+3. **スキーマ定義**
+   `prisma/schema.prisma` に Task モデルを定義
+
+4. **環境変数設定**
+   - `.env.local` - ローカル開発用
+   - `.env.staging` - ステージング環境用
+
+5. **Prisma Client の生成**
+   ```bash
+   pnpm exec prisma generate
+   ```
+
+6. **マイグレーション実行**
+   ```bash
+   pnpm exec prisma migrate dev --name init
+   ```
+
+### 開発時の操作
+
+- **新しいモデルを追加した場合**
+  1. `schema.prisma` を編集
+  2. `pnpm exec prisma migrate dev --name <description>`
+  3. Prisma Client が自動再生成される
+
+- **既存のデータベースに接続する場合**
+  1. 環境変数 `DATABASE_URL` を設定
+  2. `pnpm exec prisma db pull` でスキーマを取得
+  3. `pnpm exec prisma generate` で Client を生成

@@ -1,5 +1,6 @@
 import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import { MainLayout } from "~/components/layout";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,27 +11,12 @@ export const meta: MetaFunction = () => {
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <MainLayout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <header className="py-16">
           <h1 className="text-4xl font-bold text-gray-900 text-center mb-4">About</h1>
           <p className="text-xl text-gray-600 text-center">プロジェクトの技術詳細</p>
         </header>
-
-        <nav className="flex justify-center gap-6 mb-16">
-          <Link
-            to="/"
-            className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition"
-          >
-            ホーム
-          </Link>
-          <Link
-            to="/about"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            About
-          </Link>
-        </nav>
 
         <main className="space-y-8 pb-16">
           <section className="bg-white p-8 rounded-lg shadow-lg">
@@ -132,6 +118,6 @@ export default function About() {
           </section>
         </main>
       </div>
-    </div>
+    </MainLayout>
   );
 }
