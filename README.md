@@ -5,6 +5,7 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 ## プロジェクト概要
 
 このプロジェクトは以下の構成で実装されています：
+
 - **フロントエンド/バックエンド**: Remix (TypeScript)
 - **ホスティング**: Azure Container Instances
 - **コンテナレジストリ**: Azure Container Registry
@@ -22,12 +23,14 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 
 ## 実装タスク
 
-### フェーズ1: 基本セットアップ ✅
+### フェーズ 1: 基本セットアップ ✅
+
 - [x] Docker 開発環境の構築
 - [x] プロジェクトガイドライン（CLAUDE.md）の作成
 - [x] プロジェクトの基本ディレクトリ構成を作成
 
-### フェーズ2: Remix アプリケーション開発 ✅
+### フェーズ 2: Remix アプリケーション開発 ✅
+
 - [x] Remix アプリケーションの初期化
 - [x] Biome の設定とスクリプトの追加（ESLint から移行）
 - [x] TypeScript の設定（厳格な型チェック設定）
@@ -50,33 +53,37 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
   - [x] 共通レイアウトコンポーネント作成
 - [x] エラーハンドリングの実装
   - [x] グローバルエラーバウンダリー
-  - [x] 404エラーページ
-  - [x] APIエラーハンドリング（try-catch）
+  - [x] 404 エラーページ
+  - [x] API エラーハンドリング（try-catch）
   - [x] トースト通知コンポーネント
   - [x] データベースエラーの適切な処理
 
-### フェーズ3: ネットワークインフラ構築
+### フェーズ 3: ネットワークインフラ構築
+
 - [ ] Azure VNet の作成（Pulumi）
 - [ ] AWS VPC の作成（Pulumi）
 - [ ] Site-to-Site VPN の設定
 - [ ] ルーティングとセキュリティグループの設定
 - [ ] 接続テストスクリプトの作成
 
-### フェーズ4: AWS RDS セットアップ
+### フェーズ 4: AWS RDS セットアップ
+
 - [ ] Pulumi で RDS インスタンスを定義（プライベートサブネット）
 - [ ] セキュリティグループの設定
 - [ ] パラメータグループとオプショングループの設定
 - [ ] データベースの初期化スクリプト
 - [ ] 接続文字列の生成と環境変数管理
 
-### フェーズ5: Azure Container Instances 構築
+### フェーズ 5: Azure Container Instances 構築
+
 - [x] Container Registry の作成（Pulumi）
 - [x] Container Instances の作成と設定
 - [x] Application Insights の設定（ログ監視）
 - [x] 環境変数の設定
 - [x] GitHub Actions によるデプロイメント設定
 
-### フェーズ6: デプロイと動作確認
+### フェーズ 6: デプロイと動作確認
+
 - [x] Remix アプリケーションのビルド
 - [x] Azure Container Instances へのデプロイ
 - [x] GitHub Actions セットアップドキュメントの作成
@@ -87,12 +94,14 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 ## セットアップ手順
 
 ### 1. リポジトリのクローン
+
 ```bash
 git clone <repository-url>
 cd ss-azure
 ```
 
 ### 2. Docker 環境の構築
+
 ```bash
 # Docker イメージのビルド
 docker compose build
@@ -105,6 +114,7 @@ docker compose exec ss-azure-dev bash
 ```
 
 ### 3. 依存関係のインストール（コンテナ内で実行）
+
 ```bash
 # アプリケーション側
 cd app
@@ -116,6 +126,7 @@ pnpm install
 ```
 
 ### 4. 環境変数の設定
+
 ```bash
 # app/.env.local を作成
 cp app/.env.example app/.env.local
@@ -123,6 +134,7 @@ cp app/.env.example app/.env.local
 ```
 
 ### 5. 開発サーバーの起動（コンテナ内で実行）
+
 ```bash
 cd app
 pnpm run dev
@@ -131,6 +143,7 @@ pnpm run dev
 ## 開発コマンド
 
 ### アプリケーション開発（コンテナ内で実行）
+
 ```bash
 # 開発サーバー起動
 pnpm dev
@@ -149,6 +162,7 @@ pnpm biome:fix
 ```
 
 ### インフラ管理（コンテナ内で実行）
+
 ```bash
 cd infra
 
@@ -170,6 +184,7 @@ pulumi destroy
 ```
 
 ### Docker 環境の管理（ホストで実行）
+
 ```bash
 # コンテナの起動
 docker compose up -d
@@ -187,6 +202,7 @@ docker compose exec ss-azure-dev bash
 ## 現在の実装状況
 
 ### 実装済み機能
+
 - ✅ Docker 開発環境（Node.js 22 + pnpm）
 - ✅ Remix SSR アプリケーション
 - ✅ TypeScript + Biome によるコード品質管理
@@ -206,7 +222,7 @@ docker compose exec ss-azure-dev bash
 - ✅ タスク管理 CRUD 機能
   - タスクの作成・読み取り・更新・削除
   - タスク完了状態の管理
-  - レスポンシブなUI
+  - レスポンシブな UI
 - ✅ エラーハンドリング
   - グローバルエラーバウンダリー
   - カスタムエラーページ（404、500）
@@ -215,20 +231,20 @@ docker compose exec ss-azure-dev bash
 
 ### API エンドポイント
 
-| エンドポイント | 説明 | レスポンス例 |
-|--------------|------|------------|
-| `/api/health` | 詳細な健全性情報 | `{ status: "healthy", timestamp: "...", uptime: 123.45, memory: {...} }` |
-| `/api/ready` | 準備状態チェック | `{ ready: true, timestamp: "...", checks: {...} }` |
-| `/api/liveness` | 生存確認 | `{ status: "alive", timestamp: "..." }` |
+| エンドポイント  | 説明             | レスポンス例                                                             |
+| --------------- | ---------------- | ------------------------------------------------------------------------ |
+| `/api/health`   | 詳細な健全性情報 | `{ status: "healthy", timestamp: "...", uptime: 123.45, memory: {...} }` |
+| `/api/ready`    | 準備状態チェック | `{ ready: true, timestamp: "...", checks: {...} }`                       |
+| `/api/liveness` | 生存確認         | `{ status: "alive", timestamp: "..." }`                                  |
 
 ### ページルート
 
-| ルート | 説明 |
-|-------|------|
-| `/` | ホームページ |
-| `/about` | プロジェクト詳細情報 |
-| `/tasks` | タスク管理（一覧・作成・削除・完了切り替え） |
-| `/tasks/:id/edit` | タスク編集ページ |
+| ルート            | 説明                                         |
+| ----------------- | -------------------------------------------- |
+| `/`               | ホームページ                                 |
+| `/about`          | プロジェクト詳細情報                         |
+| `/tasks`          | タスク管理（一覧・作成・削除・完了切り替え） |
+| `/tasks/:id/edit` | タスク編集ページ                             |
 
 ## プロジェクト構成
 
@@ -290,3 +306,19 @@ ss-azure/
 ## ライセンス
 
 MIT License
+
+明日以降は：
+
+1. pulumi up でインフラを作成
+2. GitHub Actions の認証設定を修正
+3. AWS VPC のコード作成に進む
+
+というフローで進められますね。
+
+● Update Todos
+⎿  ☒ Azure VNet の Pulumi コード作成
+☐ AWS VPC の Pulumi コード作成
+☐ Site-to-Site VPN 接続の設定
+☐ ルーティングとセキュリティグループの設定
+☐ 接続テストスクリプトの作成
+☐ GitHub Actions の Azure 認証設定修正
