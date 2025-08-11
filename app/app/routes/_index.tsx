@@ -15,10 +15,13 @@ export default function Index() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <header className="py-16">
           <h1 className="text-4xl font-bold text-gray-900 text-center mb-4">
-            SS Azure プロジェクト
+            🎉 SS Azure プロジェクト - VPN接続成功！
           </h1>
           <p className="text-xl text-gray-600 text-center">
-            Remix on Azure + AWS RDS のサンプルアプリケーション
+            Azure Container Instances から Site-to-Site VPN 経由で AWS RDS に接続完了
+          </p>
+          <p className="text-lg text-green-600 text-center mt-4">
+            デプロイ日時: {new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })}
           </p>
         </header>
 
@@ -38,14 +41,15 @@ export default function Index() {
           </div>
 
           <div className="bg-white p-8 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-semibold mb-4">技術的な特徴</h2>
+            <h2 className="text-2xl font-semibold mb-4">✅ 達成した技術要素</h2>
             <ul className="list-disc list-inside text-gray-600 space-y-2">
-              <li>Azure VNet と AWS VPC 間の Site-to-Site VPN 接続</li>
+              <li className="text-green-600 font-semibold">✅ Azure VNet と AWS VPC 間の Site-to-Site VPN 接続</li>
+              <li className="text-green-600 font-semibold">✅ VPN経由でのRDS PostgreSQL接続</li>
               <li>すべて TypeScript で実装</li>
               <li>Docker による開発環境の統一</li>
-              <li>Biome による一貫したコードフォーマット</li>
               <li>Infrastructure as Code による再現可能な環境構築</li>
               <li>Prisma ORM によるタイプセーフなデータベースアクセス</li>
+              <li>GitHub Actions による自動デプロイ</li>
             </ul>
           </div>
         </main>
