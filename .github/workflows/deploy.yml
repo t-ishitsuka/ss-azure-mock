@@ -14,128 +14,137 @@ env:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-    - name: Log in to Azure
-      uses: azure/login@v2
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Log in to Azure Container Registry
-      uses: azure/docker-login@v2
-      with:
-        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
-        username: ${{ secrets.REGISTRY_USERNAME }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./app
-        file: ./app/Dockerfile.production
-        push: true
-        tags: |
-          ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
-          ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
-        platforms: linux/amd64
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          file: ./app/Dockerfile.production
+          push: true
+          tags: |
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          platforms: linux/amd64
 
-    - name: Update Container Instance in VNet
-      run: |
-        set -e  # エラーが発生したら即座に失敗
-        
-        echo "Updating Container Instance in VNet..."
-        
-        # 既存のContainer Instancesが存在するか確認
-        if az container show --name ss-azure-staging-container-vnet --resource-group ss-azure-staging-rg &>/dev/null; then
-          echo "Deleting existing Container Instance..."
-          az container delete \
-            --name ss-azure-staging-container-vnet \
+      - name: Update Container Instance in VNet
+        run: |
+          echo "Updating Container Instance in VNet..."
+
+          # 既存のContainer Instancesが存在するか確認
+          if az container show --name ss-azure-staging-container-vnet --resource-group ss-azure-staging-rg &>/dev/null; then
+            echo "Deleting existing Container Instance..."
+            az container delete \
+              --name ss-azure-staging-container-vnet \
+              --resource-group ss-azure-staging-rg \
+              --yes
+            
+            # 削除完了を待つ
+            echo "Waiting for deletion to complete..."
+            for i in {1..30}; do
+              if ! az container show --name ss-azure-staging-container-vnet --resource-group ss-azure-staging-rg &>/dev/null; then
+                echo "Container Instance deleted successfully"
+                break
+              fi
+              sleep 2
+            done
+          fi
+
+          # VNet内にContainer Instancesを作成
+          echo "Creating new Container Instance in VNet..."
+          az container create \
             --resource-group ss-azure-staging-rg \
-            --yes
-          
-          # 削除完了を待つ
-          echo "Waiting for deletion to complete..."
+            --name ss-azure-staging-container-vnet \
+            --image ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+            --registry-login-server ${{ env.REGISTRY_NAME }}.azurecr.io \
+            --registry-username ${{ secrets.REGISTRY_USERNAME }} \
+            --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+            --subnet ${{ secrets.VNET_SUBNET_ID }} \
+            --os-type Linux \
+            --cpu 1 \
+            --memory 1.5 \
+            --restart-policy Always \
+            --ip-address Private \
+            --ports 80 \
+            --environment-variables \
+              NODE_ENV=production \
+              PORT=80 \
+              DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              APPLICATIONINSIGHTS_CONNECTION_STRING="${{ secrets.APP_INSIGHTS_CONNECTION_STRING }}" \
+            --location japaneast
+
+          echo "Container Instance created successfully"
+
+      - name: Update Application Gateway Backend
+        run: |
+          echo "Updating Application Gateway backend..."
+
+          # Container Instancesが起動するまで待機
+          echo "Waiting for Container Instance to be ready..."
           for i in {1..30}; do
-            if ! az container show --name ss-azure-staging-container-vnet --resource-group ss-azure-staging-rg &>/dev/null; then
-              echo "Container Instance deleted successfully"
+            STATE=$(az container show \
+              --name ss-azure-staging-container-vnet \
+              --resource-group ss-azure-staging-rg \
+              --query "instanceView.state" -o tsv 2>/dev/null || echo "Unknown")
+            
+            if [ "$STATE" = "Running" ]; then
+              echo "Container Instance is running"
               break
             fi
-            sleep 2
+            echo "Current state: $STATE, waiting..."
+            sleep 5
           done
-        fi
-        
-        # VNet内にContainer Instancesを作成
-        echo "Creating new Container Instance in VNet..."
-        az container create \
-          --resource-group ss-azure-staging-rg \
-          --name ss-azure-staging-container-vnet \
-          --image ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-          --registry-login-server ${{ env.REGISTRY_NAME }}.azurecr.io \
-          --registry-username ${{ secrets.REGISTRY_USERNAME }} \
-          --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
-          --subnet ${{ secrets.VNET_SUBNET_ID }} \
-          --os-type Linux \
-          --cpu 1 \
-          --memory 1.5 \
-          --restart-policy Always \
-          --ip-address Private \
-          --ports 80 \
-          --environment-variables \
-            NODE_ENV=production \
-            PORT=80 \
-            DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            APPLICATIONINSIGHTS_CONNECTION_STRING="${{ secrets.APP_INSIGHTS_CONNECTION_STRING }}" \
-          --location japaneast
-        
-        echo "Container Instance created successfully"
-    
-    - name: Update Application Gateway Backend
-      run: |
-        set -e  # エラーが発生したら即座に失敗
-        
-        echo "Updating Application Gateway backend..."
-        
-        # Container Instancesが起動するまで待機
-        echo "Waiting for Container Instance to be ready..."
-        for i in {1..30}; do
-          STATE=$(az container show \
+
+          # Container InstancesのプライベートIPを取得
+          CONTAINER_IP=$(az container show \
             --name ss-azure-staging-container-vnet \
             --resource-group ss-azure-staging-rg \
-            --query "instanceView.state" -o tsv 2>/dev/null || echo "Unknown")
-          
-          if [ "$STATE" = "Running" ]; then
-            echo "Container Instance is running"
-            break
+            --query "ipAddress.ip" -o tsv)
+
+          if [ -z "$CONTAINER_IP" ]; then
+            echo "Error: Could not get Container Instance IP"
+            exit 1
           fi
-          echo "Current state: $STATE, waiting..."
-          sleep 5
-        done
-        
-        # Container InstancesのプライベートIPを取得
-        CONTAINER_IP=$(az container show \
-          --name ss-azure-staging-container-vnet \
-          --resource-group ss-azure-staging-rg \
-          --query "ipAddress.ip" -o tsv)
-        
-        if [ -z "$CONTAINER_IP" ]; then
-          echo "Error: Could not get Container Instance IP"
-          exit 1
-        fi
-        
-        echo "Container IP: $CONTAINER_IP"
-        
-        # Application Gatewayのバックエンドプールを更新
-        echo "Updating Application Gateway backend pool..."
-        az network application-gateway address-pool update \
-          --gateway-name ss-azure-staging-appgw \
-          --resource-group ss-azure-staging-rg \
-          --name backend-pool \
-          --servers $CONTAINER_IP
-        
-        echo "Application Gateway backend updated successfully"
+
+          echo "Container IP: $CONTAINER_IP"
+
+          # Application Gatewayのバックエンドプール名を取得
+          BACKEND_POOL_NAME=$(az network application-gateway address-pool list \
+            --gateway-name ss-azure-staging-appgw \
+            --resource-group ss-azure-staging-rg \
+            --query "[0].name" -o tsv)
+          
+          if [ -z "$BACKEND_POOL_NAME" ]; then
+            echo "Error: Could not find backend pool"
+            exit 1
+          fi
+          
+          echo "Backend pool name: $BACKEND_POOL_NAME"
+          
+          # Application Gatewayのバックエンドプールを更新
+          echo "Updating Application Gateway backend pool..."
+          az network application-gateway address-pool update \
+            --gateway-name ss-azure-staging-appgw \
+            --resource-group ss-azure-staging-rg \
+            --name "$BACKEND_POOL_NAME" \
+            --servers $CONTAINER_IP
+
+          echo "Application Gateway backend updated successfully"
