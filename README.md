@@ -1,6 +1,7 @@
 # SS Azure - Remix on Azure with AWS RDS
 
 Remix アプリケーションを Azure にデプロイし、AWS RDS と連携するサンプルプロジェクトです。
+http://172.192.32.171/tasks
 
 ## プロジェクト概要
 
@@ -64,7 +65,7 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 - [x] AWS VPC の作成（Pulumi）
 - [x] Site-to-Site VPN の設定
 - [x] ルーティングとセキュリティグループの設定
-- [x] 接続テスト（VPN接続確立済み）
+- [x] 接続テスト（VPN 接続確立済み）
 
 ### フェーズ 4: AWS RDS セットアップ ✅
 
@@ -77,7 +78,7 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 ### フェーズ 5: Azure Container Instances 構築 ✅
 
 - [x] Container Registry の作成（Pulumi）
-- [x] Container Instances の作成と設定（VNet統合）
+- [x] Container Instances の作成と設定（VNet 統合）
 - [x] Application Insights の設定（ログ監視）
 - [x] Application Gateway の設定（パブリックアクセス）
 - [x] 環境変数の設定
@@ -88,7 +89,7 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 - [x] Remix アプリケーションのビルド
 - [x] Azure Container Instances へのデプロイ
 - [x] GitHub Actions セットアップドキュメントの作成
-- [x] データベース接続の確認（VPN経由でRDS接続）
+- [x] データベース接続の確認（VPN 経由で RDS 接続）
 - [x] エンドツーエンドの動作テスト
 - [x] トラブルシューティングドキュメントの作成
 
@@ -308,22 +309,23 @@ ss-azure/
 
 ### 達成した主要機能
 
-- ✅ **Azure Container Instances** - VNet内に配置、Application Gateway経由でパブリックアクセス
-- ✅ **AWS RDS PostgreSQL** - プライベートサブネットに配置  
-- ✅ **Site-to-Site VPN** - Azure VNetとAWS VPC間の接続確立
+- ✅ **Azure Container Instances** - VNet 内に配置、Application Gateway 経由でパブリックアクセス
+- ✅ **AWS RDS PostgreSQL** - プライベートサブネットに配置
+- ✅ **Site-to-Site VPN** - Azure VNet と AWS VPC 間の接続確立
 - ✅ **GitHub Actions CI/CD** - 自動ビルド・デプロイパイプライン
-- ✅ **Prismaマイグレーション** - 手動実行でデータベーススキーマ適用
-- ✅ **タスク管理CRUD** - 完全動作するサンプルアプリケーション
+- ✅ **Prisma マイグレーション** - 手動実行でデータベーススキーマ適用
+- ✅ **タスク管理 CRUD** - 完全動作するサンプルアプリケーション
 
 ### 完了したタスク
 
 全フェーズ（1〜6）のタスクが完了しました：
-- フェーズ1: 基本セットアップ ✅
-- フェーズ2: Remixアプリケーション開発 ✅
-- フェーズ3: ネットワークインフラ構築 ✅
-- フェーズ4: AWS RDSセットアップ ✅
-- フェーズ5: Azure Container Instances構築 ✅  
-- フェーズ6: デプロイと動作確認 ✅
+
+- フェーズ 1: 基本セットアップ ✅
+- フェーズ 2: Remix アプリケーション開発 ✅
+- フェーズ 3: ネットワークインフラ構築 ✅
+- フェーズ 4: AWS RDS セットアップ ✅
+- フェーズ 5: Azure Container Instances 構築 ✅
+- フェーズ 6: デプロイと動作確認 ✅
 
 ## ライセンス
 

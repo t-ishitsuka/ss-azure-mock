@@ -26,9 +26,9 @@ const networkInfra = createNetworkInfrastructure(projectName, location);
 // Azureインフラストラクチャの作成（VNet内にContainer Instancesを配置）
 const azureInfra = createAzureInfrastructure(networkInfra);
 
-// Container InstanceのプライベートIPアドレスを取得（Application Gateway用）
-// VNet内のContainer InstancesのプライベートIPを使用
-const containerPrivateIP = azureInfra.containerPrivateIP || pulumi.interpolate`10.0.1.4`;
+// Container InstanceのプライベートIPアドレス（GitHub Actionsでデプロイされる）
+// 固定IPを使用（GitHub Actionsで作成されるContainer Instancesが使用）
+const containerPrivateIP = pulumi.interpolate`10.0.1.5`;
 
 // Application Gatewayの作成（パブリックアクセス用）
 const appGatewayInfra = createAppGatewayInfrastructure(
@@ -53,8 +53,6 @@ const vpnInfra = createVPNInfrastructure(
 // Azure 関連の出力
 export const azure = {
   resourceGroupName: azureInfra.resourceGroupName,
-  containerGroupName: azureInfra.containerGroupName,
-  containerUrl: pulumi.interpolate`http://${appGatewayInfra.appGatewayPublicIP.ipAddress}`,
   containerRegistryLoginServer: azureInfra.containerRegistryLoginServer,
   appInsightsInstrumentationKey: azureInfra.appInsightsInstrumentationKey,
   appInsightsConnectionString: azureInfra.appInsightsConnectionString,

@@ -231,20 +231,6 @@ export function createNetworkInfrastructure(projectName: string, location: strin
     ["10.0.0.0/16"] // Azure VNetのアドレス空間
   );
 
-  // Container Instances用サブネット（後でNSGと関連付けるため、ここでは使用しない）
-  // const containerSubnet = createSubnet(
-  //   `${projectName}-${environment}-container`,
-  //   resourceGroup,
-  //   vnet,
-  //   "10.0.1.0/24",
-  //   [
-  //     {
-  //       name: "Microsoft.ContainerInstance.containerGroups",
-  //       serviceName: "Microsoft.ContainerInstance/containerGroups",
-  //     },
-  //   ]
-  // );
-
   // Gateway Subnet（VPN Gateway用）
   const gatewaySubnet = createGatewaySubnet(resourceGroup, vnet, "10.0.254.0/24");
 
