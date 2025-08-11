@@ -84,8 +84,32 @@ export function createNetworkSecurityGroup(
 // NSGルールの定義
 export const containerInstancesNSGRules: azure.types.input.network.SecurityRuleArgs[] = [
   {
+    name: "AllowAppGatewayHTTP",
+    priority: 100,  // 優先度を100に修正（最小値）
+    direction: "Inbound",
+    access: "Allow",
+    protocol: "Tcp",
+    sourcePortRange: "*",
+    destinationPortRange: "80",
+    sourceAddressPrefix: "10.0.2.0/24", // Application Gatewayサブネットからのアクセスを許可
+    destinationAddressPrefix: "*",
+    description: "Application GatewayサブネットからのHTTPトラフィックを許可",
+  },
+  {
+    name: "AllowAzureLoadBalancer",
+    priority: 105,  // 優先度を105に修正
+    direction: "Inbound",
+    access: "Allow",
+    protocol: "Tcp",
+    sourcePortRange: "*",
+    destinationPortRange: "80",
+    sourceAddressPrefix: "AzureLoadBalancer", // Azureインフラストラクチャのヘルスプローブ
+    destinationAddressPrefix: "*",
+    description: "Azure Load Balancerヘルスプローブを許可",
+  },
+  {
     name: "AllowHTTP",
-    priority: 100,
+    priority: 110,  // 優先度を110に修正
     direction: "Inbound",
     access: "Allow",
     protocol: "Tcp",
@@ -97,7 +121,7 @@ export const containerInstancesNSGRules: azure.types.input.network.SecurityRuleA
   },
   {
     name: "AllowHTTPS",
-    priority: 110,
+    priority: 115,
     direction: "Inbound",
     access: "Allow",
     protocol: "Tcp",
@@ -120,7 +144,7 @@ export const containerInstancesNSGRules: azure.types.input.network.SecurityRuleA
     description: "VNet内からのSSHを許可",
   },
   {
-    name: "AllowPostgreSQLFromVPN",
+    name: "AllowPostgreSQLToAWS",
     priority: 130,
     direction: "Outbound",
     access: "Allow",
@@ -128,7 +152,7 @@ export const containerInstancesNSGRules: azure.types.input.network.SecurityRuleA
     sourcePortRange: "*",
     destinationPortRange: "5432",
     sourceAddressPrefix: "*",
-    destinationAddressPrefix: "172.31.0.0/16", // AWS VPCのCIDR
+    destinationAddressPrefix: "10.1.0.0/16", // AWS VPCのCIDR（修正：10.1.0.0/16）
     description: "AWS RDSへのPostgreSQL接続を許可",
   },
 ];

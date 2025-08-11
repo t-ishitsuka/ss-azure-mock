@@ -86,7 +86,7 @@ export function createApplicationGateway(
     backendHttpSettingsCollection: [
       {
         name: "appGatewayBackendHttpSettings",
-        port: 8080,
+        port: 80,
         protocol: "Http",
         cookieBasedAffinity: "Disabled",
         requestTimeout: 30,
@@ -157,7 +157,7 @@ export function createApplicationGateway(
         unhealthyThreshold: 3,
         pickHostNameFromBackendHttpSettings: false,
         host: "localhost",
-        port: 8080,
+        port: 80,
       },
     ],
   });
