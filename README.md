@@ -9,7 +9,7 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
 - **フロントエンド/バックエンド**: Remix (TypeScript)
 - **ホスティング**: Azure Container Instances
 - **コンテナレジストリ**: Azure Container Registry
-- **データベース**: AWS RDS (PostgreSQL) ※未実装
+- **データベース**: AWS RDS (PostgreSQL)
 - **インフラ管理**: Pulumi (TypeScript)
 - **コード品質**: Biome (Linter/Formatter)
 - **CI/CD**: GitHub Actions
@@ -58,38 +58,39 @@ Remix アプリケーションを Azure にデプロイし、AWS RDS と連携�
   - [x] トースト通知コンポーネント
   - [x] データベースエラーの適切な処理
 
-### フェーズ 3: ネットワークインフラ構築
+### フェーズ 3: ネットワークインフラ構築 ✅
 
-- [ ] Azure VNet の作成（Pulumi）
-- [ ] AWS VPC の作成（Pulumi）
-- [ ] Site-to-Site VPN の設定
-- [ ] ルーティングとセキュリティグループの設定
-- [ ] 接続テストスクリプトの作成
+- [x] Azure VNet の作成（Pulumi）
+- [x] AWS VPC の作成（Pulumi）
+- [x] Site-to-Site VPN の設定
+- [x] ルーティングとセキュリティグループの設定
+- [x] 接続テスト（VPN接続確立済み）
 
-### フェーズ 4: AWS RDS セットアップ
+### フェーズ 4: AWS RDS セットアップ ✅
 
-- [ ] Pulumi で RDS インスタンスを定義（プライベートサブネット）
-- [ ] セキュリティグループの設定
-- [ ] パラメータグループとオプショングループの設定
-- [ ] データベースの初期化スクリプト
-- [ ] 接続文字列の生成と環境変数管理
+- [x] Pulumi で RDS インスタンスを定義（プライベートサブネット）
+- [x] セキュリティグループの設定
+- [x] パラメータグループとオプショングループの設定
+- [x] データベースの初期化
+- [x] 接続文字列の生成と環境変数管理
 
-### フェーズ 5: Azure Container Instances 構築
+### フェーズ 5: Azure Container Instances 構築 ✅
 
 - [x] Container Registry の作成（Pulumi）
-- [x] Container Instances の作成と設定
+- [x] Container Instances の作成と設定（VNet統合）
 - [x] Application Insights の設定（ログ監視）
+- [x] Application Gateway の設定（パブリックアクセス）
 - [x] 環境変数の設定
 - [x] GitHub Actions によるデプロイメント設定
 
-### フェーズ 6: デプロイと動作確認
+### フェーズ 6: デプロイと動作確認 ✅
 
 - [x] Remix アプリケーションのビルド
 - [x] Azure Container Instances へのデプロイ
 - [x] GitHub Actions セットアップドキュメントの作成
-- [ ] データベース接続の確認
-- [ ] エンドツーエンドの動作テスト
-- [ ] トラブルシューティングドキュメントの作成
+- [x] データベース接続の確認（VPN経由でRDS接続）
+- [x] エンドツーエンドの動作テスト
+- [x] トラブルシューティングドキュメントの作成
 
 ## セットアップ手順
 
@@ -303,22 +304,27 @@ ss-azure/
 └── .gitignore             # Git 除外設定
 ```
 
+## プロジェクト完了状況
+
+### 達成した主要機能
+
+- ✅ **Azure Container Instances** - VNet内に配置、Application Gateway経由でパブリックアクセス
+- ✅ **AWS RDS PostgreSQL** - プライベートサブネットに配置  
+- ✅ **Site-to-Site VPN** - Azure VNetとAWS VPC間の接続確立
+- ✅ **GitHub Actions CI/CD** - 自動ビルド・デプロイパイプライン
+- ✅ **Prismaマイグレーション** - 手動実行でデータベーススキーマ適用
+- ✅ **タスク管理CRUD** - 完全動作するサンプルアプリケーション
+
+### 完了したタスク
+
+全フェーズ（1〜6）のタスクが完了しました：
+- フェーズ1: 基本セットアップ ✅
+- フェーズ2: Remixアプリケーション開発 ✅
+- フェーズ3: ネットワークインフラ構築 ✅
+- フェーズ4: AWS RDSセットアップ ✅
+- フェーズ5: Azure Container Instances構築 ✅  
+- フェーズ6: デプロイと動作確認 ✅
+
 ## ライセンス
 
 MIT License
-
-明日以降は：
-
-1. pulumi up でインフラを作成
-2. GitHub Actions の認証設定を修正
-3. AWS VPC のコード作成に進む
-
-というフローで進められますね。
-
-● Update Todos
-⎿  ☒ Azure VNet の Pulumi コード作成
-☐ AWS VPC の Pulumi コード作成
-☐ Site-to-Site VPN 接続の設定
-☐ ルーティングとセキュリティグループの設定
-☐ 接続テストスクリプトの作成
-☐ GitHub Actions の Azure 認証設定修正
