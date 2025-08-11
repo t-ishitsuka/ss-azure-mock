@@ -50,9 +50,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 # 生成済みのnode_modules全体をコピー（Prismaクライアントを含む）
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 
-# エントリーポイントスクリプトをコピー
-COPY --chown=nodejs:nodejs docker-entrypoint.sh ./
-RUN chmod +x docker-entrypoint.sh
+# エントリーポイントスクリプトをコピー（一時的にコメントアウト）
+# COPY --chown=nodejs:nodejs docker-entrypoint.sh ./
+# RUN chmod +x docker-entrypoint.sh
 
 # ポート80を非rootユーザーでも使用可能にする
 RUN apk add --no-cache libcap && \
@@ -68,8 +68,8 @@ ENV PORT=80
 # ポートを公開
 EXPOSE 80
 
-# エントリーポイントを設定
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# エントリーポイントを設定（一時的に無効化）
+# ENTRYPOINT ["./docker-entrypoint.sh"]
 
 # アプリケーション起動
 CMD ["pnpm", "start"]

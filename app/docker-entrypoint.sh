@@ -18,7 +18,7 @@ if [ "$NODE_ENV" = "production" ]; then
   # データベース接続を待機（最大30秒）
   echo "Waiting for database connection..."
   for i in $(seq 1 30); do
-    if npx prisma migrate status 2>/dev/null; then
+    if pnpm exec prisma migrate status 2>/dev/null; then
       echo "Database connection successful"
       break
     fi
@@ -32,8 +32,11 @@ if [ "$NODE_ENV" = "production" ]; then
   
   # マイグレーションを実行
   echo "Applying database migrations..."
-  npx prisma migrate deploy
-  echo "Migrations completed successfully"
+  pnpm exec prisma migrate deploy || {
+    echo "Migration failed. Continuing with application startup..."
+    # マイグレーションが失敗してもアプリケーションは起動する
+  }
+  echo "Migrations completed or skipped"
 else
   echo "Non-production environment. Skipping migrations."
 fi
