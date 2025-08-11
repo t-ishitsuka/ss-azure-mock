@@ -50,15 +50,19 @@ COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 # 生成済みのnode_modules全体をコピー（Prismaクライアントを含む）
 COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
 
+# ポート80を非rootユーザーでも使用可能にする
+RUN apk add --no-cache libcap && \
+    setcap 'cap_net_bind_service=+ep' /usr/local/bin/node
+
 # ユーザーを切り替え
 USER nodejs
 
 # 環境変数
 ENV NODE_ENV=production
-ENV PORT=8080
+ENV PORT=80
 
 # ポートを公開
-EXPOSE 8080
+EXPOSE 80
 
 # アプリケーション起動
 CMD ["pnpm", "start"]
