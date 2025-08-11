@@ -1,0 +1,73 @@
+name: Run Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to migrate'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+      
+      - name: Install dependencies
+        working-directory: ./app
+        run: pnpm install
+      
+      - name: Generate Prisma Client
+        working-directory: ./app
+        run: pnpm exec prisma generate
+      
+      - name: Run database migrations
+        working-directory: ./app
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Running Prisma migrations for ${{ inputs.environment }} environment..."
+          
+          # マイグレーションのステータスを確認
+          echo "Checking migration status..."
+          pnpm exec prisma migrate status
+          
+          # マイグレーションを実行
+          echo "Applying migrations..."
+          pnpm exec prisma migrate deploy
+          
+          # マイグレーション後のステータスを確認
+          echo "Verifying migration status..."
+          pnpm exec prisma migrate status
+          
+          echo "Migrations completed successfully for ${{ inputs.environment }}"
+      
+      - name: Seed database (optional)
+        working-directory: ./app
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # シードファイルが存在する場合のみ実行
+          if [ -f "prisma/seed.ts" ] || [ -f "prisma/seed.js" ]; then
+            echo "Running database seed..."
+            pnpm exec prisma db seed
+          else
+            echo "No seed file found, skipping seeding"
+          fi
