@@ -47,18 +47,31 @@ jobs:
 
     - name: Update Container Instance in VNet
       run: |
-        # VNet内のContainer Instancesを新しいイメージで更新
-        # 既存のContainer Instancesを削除
-        az container delete \
-          --name ss-azure-staging-container-vnet \
-          --resource-group ss-azure-staging-rg \
-          --yes \
-          --no-wait || true
+        set -e  # エラーが発生したら即座に失敗
         
-        # 少し待機（削除処理のため）
-        sleep 10
+        echo "Updating Container Instance in VNet..."
+        
+        # 既存のContainer Instancesが存在するか確認
+        if az container show --name ss-azure-staging-container-vnet --resource-group ss-azure-staging-rg &>/dev/null; then
+          echo "Deleting existing Container Instance..."
+          az container delete \
+            --name ss-azure-staging-container-vnet \
+            --resource-group ss-azure-staging-rg \
+            --yes
+          
+          # 削除完了を待つ
+          echo "Waiting for deletion to complete..."
+          for i in {1..30}; do
+            if ! az container show --name ss-azure-staging-container-vnet --resource-group ss-azure-staging-rg &>/dev/null; then
+              echo "Container Instance deleted successfully"
+              break
+            fi
+            sleep 2
+          done
+        fi
         
         # VNet内にContainer Instancesを作成
+        echo "Creating new Container Instance in VNet..."
         az container create \
           --resource-group ss-azure-staging-rg \
           --name ss-azure-staging-container-vnet \
@@ -78,28 +91,51 @@ jobs:
             PORT=80 \
             DATABASE_URL="${{ secrets.DATABASE_URL }}" \
             APPLICATIONINSIGHTS_CONNECTION_STRING="${{ secrets.APP_INSIGHTS_CONNECTION_STRING }}" \
-          --location japaneast \
-          --no-wait \
-          || echo "Container update initiated"
-      continue-on-error: true
+          --location japaneast
+        
+        echo "Container Instance created successfully"
     
     - name: Update Application Gateway Backend
       run: |
+        set -e  # エラーが発生したら即座に失敗
+        
+        echo "Updating Application Gateway backend..."
+        
+        # Container Instancesが起動するまで待機
+        echo "Waiting for Container Instance to be ready..."
+        for i in {1..30}; do
+          STATE=$(az container show \
+            --name ss-azure-staging-container-vnet \
+            --resource-group ss-azure-staging-rg \
+            --query "instanceView.state" -o tsv 2>/dev/null || echo "Unknown")
+          
+          if [ "$STATE" = "Running" ]; then
+            echo "Container Instance is running"
+            break
+          fi
+          echo "Current state: $STATE, waiting..."
+          sleep 5
+        done
+        
         # Container InstancesのプライベートIPを取得
         CONTAINER_IP=$(az container show \
           --name ss-azure-staging-container-vnet \
           --resource-group ss-azure-staging-rg \
-          --query "ipAddress.ip" -o tsv) || echo "10.0.1.5"
+          --query "ipAddress.ip" -o tsv)
+        
+        if [ -z "$CONTAINER_IP" ]; then
+          echo "Error: Could not get Container Instance IP"
+          exit 1
+        fi
         
         echo "Container IP: $CONTAINER_IP"
         
         # Application Gatewayのバックエンドプールを更新
-        if [ ! -z "$CONTAINER_IP" ]; then
-          az network application-gateway address-pool update \
-            --gateway-name ss-azure-staging-appgw \
-            --resource-group ss-azure-staging-rg \
-            --name backend-pool \
-            --servers $CONTAINER_IP \
-            --no-wait || true
-        fi
-      continue-on-error: true
+        echo "Updating Application Gateway backend pool..."
+        az network application-gateway address-pool update \
+          --gateway-name ss-azure-staging-appgw \
+          --resource-group ss-azure-staging-rg \
+          --name backend-pool \
+          --servers $CONTAINER_IP
+        
+        echo "Application Gateway backend updated successfully"
