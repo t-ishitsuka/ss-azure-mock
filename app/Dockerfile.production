@@ -19,6 +19,9 @@ RUN pnpm install --frozen-lockfile
 # アプリケーションファイルをコピー
 COPY . .
 
+# Prismaクライアントを明示的に生成
+RUN pnpm exec prisma generate
+
 # アプリケーションをビルド
 RUN pnpm build
 
@@ -44,12 +47,12 @@ COPY --from=builder --chown=nodejs:nodejs /app/public ./public
 COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
-# 生成済みのPrismaクライアントをコピー
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
 
 # 本番用の依存関係のみインストール（--ignore-scriptsでpostinstallをスキップ）
 RUN pnpm install --prod --frozen-lockfile --ignore-scripts
+
+# 生成済みのPrismaクライアントをコピー（依存関係インストール後）
+COPY --from=builder --chown=nodejs:nodejs /app/node_modules/.prisma/client ./node_modules/.prisma/client
 
 # ユーザーを切り替え
 USER nodejs
