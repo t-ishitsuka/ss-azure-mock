@@ -13,6 +13,7 @@
     "check": "pnpm typecheck && pnpm biome:check"
   },
   "dependencies": {
+    "@pulumi/aws": "^6.0.0",
     "@pulumi/azure-native": "^2.0.0",
     "@pulumi/pulumi": "^3.0.0"
   },

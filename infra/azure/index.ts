@@ -49,14 +49,14 @@ export function createAzureInfrastructure(networkInfra: NetworkInfrastructure) {
       })
     );
 
-  // Container Instance の作成（VNet内に配置）
-  const containerGroup = new azure.containerinstance.ContainerGroup("ss-azure-container", {
-    containerGroupName: getResourceName("container"),
+  // Container Instance の作成（VNet内に配置してVPN経由でRDSアクセス）
+  const containerGroup = new azure.containerinstance.ContainerGroup("ss-azure-container-vnet", {
+    containerGroupName: getResourceName("aci-vnet"), // VNet版として新規作成
     resourceGroupName: resourceGroup.name,
     location: resourceGroup.location,
     osType: "Linux",
     restartPolicy: "Always",
-    // VNet統合の設定
+    // VNet統合を有効化
     subnetIds: [
       {
         id: networkInfra.containerSubnet.id,
@@ -67,7 +67,7 @@ export function createAzureInfrastructure(networkInfra: NetworkInfrastructure) {
       type: "Private",
       ports: [
         {
-          port: 8080,
+          port: 80,
           protocol: "TCP",
         },
       ],
@@ -91,7 +91,7 @@ export function createAzureInfrastructure(networkInfra: NetworkInfrastructure) {
         },
         ports: [
           {
-            port: 8080,
+            port: 80,
             protocol: "TCP",
           },
         ],
@@ -102,17 +102,21 @@ export function createAzureInfrastructure(networkInfra: NetworkInfrastructure) {
           },
           {
             name: "PORT",
-            value: "8080",
+            value: "80",
           },
           {
             name: "APPLICATIONINSIGHTS_CONNECTION_STRING",
             secureValue: appInsights.connectionString,
           },
+          {
+            name: "DATABASE_URL",
+            value: "postgresql://dbadmin:iuCBkQQxggEWCD5pEENY@ss-azure-staging-rds.crbtndyup0lg.ap-northeast-1.rds.amazonaws.com:5432/ss_azure_db",
+          },
         ],
         livenessProbe: {
           httpGet: {
             path: "/api/liveness",
-            port: 8080,
+            port: 80,
           },
           initialDelaySeconds: 30,
           periodSeconds: 10,
@@ -120,7 +124,7 @@ export function createAzureInfrastructure(networkInfra: NetworkInfrastructure) {
         readinessProbe: {
           httpGet: {
             path: "/api/ready",
-            port: 8080,
+            port: 80,
           },
           initialDelaySeconds: 5,
           periodSeconds: 5,

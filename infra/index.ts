@@ -4,13 +4,15 @@ import * as pulumi from "@pulumi/pulumi";
 import { createAzureInfrastructure } from "./azure";
 import { createAppGatewayInfrastructure } from "./azure/app-gateway";
 
-// AWS インフラストラクチャのインポート（将来的に追加）
-// import { outputs as awsOutputs } from "./aws";
+// AWS インフラストラクチャのインポート
+import { outputs as awsOutputs } from "./aws";
+import { rdsOutputs } from "./aws/rds";
+import { vpnOutputs } from "./aws/vpn"; // VPN設定を有効化
 
 // ネットワークインフラストラクチャのインポート
 import { createNetworkInfrastructure } from "./azure/vnet";
 
-// import { createVPNInfrastructure } from "./azure/vpn-gateway";
+import { createVPNInfrastructure } from "./azure/vpn-gateway";
 
 // プロジェクト全体の設定
 const config = new pulumi.Config();
@@ -35,16 +37,16 @@ const appGatewayInfra = createAppGatewayInfrastructure(
   containerPrivateIP
 );
 
-// VPN設定（AWS側の設定が完了したら有効化）
-// const awsVpnEndpoint = config.require("awsVpnEndpoint");
-// const vpnSharedKey = config.requireSecret("vpnSharedKey");
-// const vpnInfra = createVPNInfrastructure(
-//   projectName,
-//   networkInfra.resourceGroup,
-//   networkInfra.gatewaySubnet,
-//   awsVpnEndpoint,
-//   vpnSharedKey
-// );
+// VPN設定（一時的にダミー値で設定、後でAWS VPN作成後に更新）
+const awsVpnEndpoint = config.get("awsVpnEndpoint") || "1.1.1.1"; // 後でAWS VPNのパブリックIPに更新
+const vpnSharedKey = config.getSecret("vpnSharedKey") || pulumi.secret("TempSharedKey123!@#");
+const vpnInfra = createVPNInfrastructure(
+  projectName,
+  networkInfra.resourceGroup,
+  networkInfra.gatewaySubnet,
+  awsVpnEndpoint,
+  vpnSharedKey
+);
 
 // 出力
 // Azure 関連の出力
@@ -68,17 +70,22 @@ export const network = {
   gatewaySubnetId: networkInfra.gatewaySubnet.id,
   appGatewaySubnetId: appGatewayInfra.appGatewaySubnet.id,
   appGatewayPublicIP: appGatewayInfra.appGatewayPublicIP.ipAddress,
-  // VPN関連（有効化後）
-  // vpnPublicIP: vpnInfra.vpnPublicIP.ipAddress,
-  // vpnConnectionStatus: vpnInfra.vpnConnection.connectionStatus,
+  // VPN関連
+  vpnPublicIP: vpnInfra.vpnPublicIP.ipAddress,
+  vpnGatewayId: vpnInfra.vpnGateway.id,
 };
 
-// AWS 関連の出力（将来的に追加）
-// export const aws = {
-//   vpcId: awsOutputs.vpcId,
-//   rdsEndpoint: awsOutputs.rdsEndpoint,
-//   // ...
-// };
+// AWS 関連の出力
+export const aws = {
+  vpcId: awsOutputs.vpcId,
+  vpcCidr: awsOutputs.vpcCidr,
+  rdsEndpoint: rdsOutputs.endpoint,
+  rdsConnectionString: rdsOutputs.connectionString,
+  // VPN設定
+  vpnConnectionId: vpnOutputs.vpnConnectionId,
+  tunnel1Address: vpnOutputs.tunnel1Address,
+  tunnel1PresharedKey: vpnOutputs.tunnel1PresharedKey,
+};
 
 // 共通情報の出力
 export const projectInfo = {

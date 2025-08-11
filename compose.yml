@@ -6,40 +6,27 @@ services:
     container_name: ss-azure-dev
     user: node
     volumes:
-      # プロジェクト全体をマウント
       - .:/workspace
-      # pnpm のキャッシュを永続化
       - pnpm-store:/home/node/.local/share/pnpm/store
-      # Pulumi の設定を永続化
       - pulumi-config:/home/node/.pulumi
-      # Azure CLI の設定を永続化
       - azure-config:/home/node/.azure
-      # AWS CLI の設定を永続化
       - aws-config:/home/node/.aws
     environment:
-      # Node.js 環境変数
       NODE_ENV: development
-      # Pulumi 環境変数
       PULUMI_SKIP_UPDATE_CHECK: "true"
-      # pnpm の設定
       PNPM_HOME: /home/node/.local/share/pnpm
       PATH: /home/node/.local/share/pnpm:$PATH
-      # データベース接続（コンテナ内から接続する場合）
       DATABASE_URL: postgresql://ssuser:development@ss-azure-postgres:5432/ssdb?schema=public
     working_dir: /workspace
     tty: true
     stdin_open: true
     ports:
-      # Remix 開発サーバー (Vite)
       - "3000:5173"
-      # Remix WebSocket (HMR)
       - "8002:8002"
-      # Prisma Studio
       - "5555:5555"
     networks:
       - ss-azure-network
 
-  # ローカル開発用の PostgreSQL（オプション）
   ss-azure-postgres:
     image: postgres:15-alpine
     container_name: ss-azure-postgres

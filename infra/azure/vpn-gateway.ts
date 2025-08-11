@@ -3,8 +3,8 @@ import type * as pulumi from "@pulumi/pulumi";
 
 // VPN Gateway用のパブリックIPアドレスを作成
 export function createVPNPublicIP(name: string, resourceGroup: azure.resources.ResourceGroup) {
-  return new azure.network.PublicIPAddress(`${name}-vpn-pip`, {
-    publicIpAddressName: `${name}-vpn-pip`,
+  return new azure.network.PublicIPAddress(`${name}-vpn-pip-v2`, {
+    publicIpAddressName: `${name}-vpn-pip-v2`,
     resourceGroupName: resourceGroup.name,
     location: resourceGroup.location,
     publicIPAllocationMethod: "Static",
@@ -12,7 +12,7 @@ export function createVPNPublicIP(name: string, resourceGroup: azure.resources.R
       name: "Standard",
       tier: "Regional",
     },
-    zones: ["1"], // 可用性ゾーン
+    // VPN Gatewayではzonesを設定しない（エラーメッセージより）
   });
 }
 
@@ -135,7 +135,7 @@ export function createVPNInfrastructure(
     projectName,
     resourceGroup,
     awsVpnEndpoint,
-    ["172.31.0.0/16"] // AWS VPCのCIDR
+    ["10.1.0.0/16"] // AWS VPCのCIDR（実際の設定に合わせて修正）
   );
 
   // VPN接続
