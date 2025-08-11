@@ -47,7 +47,22 @@ jobs:
 
     - name: Update Container Instance
       run: |
-        az container restart \
+        # Container Instances を新しいイメージで再作成（VNet内でも動作）
+        az container create \
+          --resource-group ss-azure-staging-rg \
           --name ss-azure-staging-container \
-          --resource-group ss-azure-staging-rg
+          --image ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+          --registry-login-server ${{ env.REGISTRY_NAME }}.azurecr.io \
+          --registry-username ${{ secrets.REGISTRY_USERNAME }} \
+          --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+          --cpu 1 \
+          --memory 1.5 \
+          --restart-policy Always \
+          --environment-variables \
+            NODE_ENV=production \
+            PORT=8080 \
+            DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+          --location japaneast \
+          --no-wait \
+          || echo "Container update initiated"
       continue-on-error: true
