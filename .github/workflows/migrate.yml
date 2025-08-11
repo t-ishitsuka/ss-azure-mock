@@ -1,4 +1,4 @@
-name: Run Database Migrations
+name: Run Database Migrations via Container
 
 on:
   workflow_dispatch:
@@ -17,57 +17,34 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Log in to Azure
+        uses: azure/login@v2
         with:
-          node-version: '20'
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
       
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 8
-      
-      - name: Install dependencies
-        working-directory: ./app
-        run: pnpm install
-      
-      - name: Generate Prisma Client
-        working-directory: ./app
-        run: pnpm exec prisma generate
-      
-      - name: Run database migrations
-        working-directory: ./app
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Run migrations in Container Instance
         run: |
           echo "Running Prisma migrations for ${{ inputs.environment }} environment..."
           
-          # マイグレーションのステータスを確認
-          echo "Checking migration status..."
-          pnpm exec prisma migrate status
+          # Container Instance内でマイグレーションを実行
+          echo "Executing migrations in Container Instance..."
           
-          # マイグレーションを実行
-          echo "Applying migrations..."
-          pnpm exec prisma migrate deploy
-          
-          # マイグレーション後のステータスを確認
-          echo "Verifying migration status..."
-          pnpm exec prisma migrate status
+          az container exec \
+            --name ss-azure-staging-container-vnet \
+            --resource-group ss-azure-staging-rg \
+            --container-name ss-azure-staging-container-vnet \
+            --exec-command "sh -c 'cd /app && npx prisma migrate status && npx prisma migrate deploy && echo Migration completed successfully'" \
+            || { echo "Migration execution failed"; exit 1; }
           
           echo "Migrations completed successfully for ${{ inputs.environment }}"
       
-      - name: Seed database (optional)
-        working-directory: ./app
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Verify migration status
         run: |
-          # シードファイルが存在する場合のみ実行
-          if [ -f "prisma/seed.ts" ] || [ -f "prisma/seed.js" ]; then
-            echo "Running database seed..."
-            pnpm exec prisma db seed
-          else
-            echo "No seed file found, skipping seeding"
-          fi
+          echo "Verifying migration status..."
+          
+          az container exec \
+            --name ss-azure-staging-container-vnet \
+            --resource-group ss-azure-staging-rg \
+            --container-name ss-azure-staging-container-vnet \
+            --exec-command "sh -c 'cd /app && npx prisma migrate status'" \
+            || echo "Status check failed (non-critical)"

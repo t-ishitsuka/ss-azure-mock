@@ -6,24 +6,41 @@
 
 - AWS RDS PostgreSQLインスタンスが作成済み
 - VPN接続が確立済み
-- DATABASE_URLがGitHub Secretsに設定済み
+- DATABASE_URLが環境変数として設定済み
+- Container InstancesがVNet内に配置済み
+
+## 重要な注意事項
+
+**AWS RDSはプライベートサブネットに配置されているため、GitHub Actionsランナーから直接アクセスできません。**
+マイグレーションは以下のいずれかの方法で実行する必要があります：
+
+1. Container Instances起動時の自動実行（推奨）
+2. Container Instances内での手動実行
+3. VPN接続済みの環境からの実行
 
 ## マイグレーション方法
 
-### 1. GitHub Actions経由（推奨）
+### 1. 自動実行（Container起動時）- 推奨
 
-#### 自動実行（デプロイ時）
-mainまたはdevelopブランチへのプッシュ時に、自動的にマイグレーションが実行されます。
-1. マイグレーション実行
-2. Dockerイメージのビルド
-3. Container Instancesへのデプロイ
+Dockerコンテナ起動時に自動的にマイグレーションが実行されます。
+`docker-entrypoint.sh`スクリプトが以下の処理を行います：
+
+1. データベース接続の確認
+2. 未適用のマイグレーションを適用
+3. アプリケーションの起動
+
+この方法では、デプロイのたびに自動的にマイグレーションが実行されるため、手動操作は不要です。
+
+### 2. GitHub Actions経由（Container Instance内実行）
 
 #### 手動実行
 1. GitHubリポジトリの「Actions」タブを開く
-2. 「Run Database Migrations」ワークフローを選択
+2. 「Run Database Migrations via Container」ワークフローを選択
 3. 「Run workflow」をクリック
 4. 環境を選択（staging/production）
 5. 「Run workflow」を実行
+
+このワークフローは、Azure Container Instance内でマイグレーションコマンドを実行します。
 
 ### 2. ローカル環境から実行
 
