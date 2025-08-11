@@ -153,6 +153,7 @@ export function createAzureInfrastructure(networkInfra: NetworkInfrastructure) {
     resourceGroupName: resourceGroup.name,
     containerGroupName: containerGroup.name,
     containerUrl: pulumi.interpolate`Private deployment in VNet - Access via Azure Application Gateway or VPN`,
+    containerPrivateIP: containerGroup.ipAddress.apply(ip => ip?.ip || "10.0.1.4"),
     containerRegistryLoginServer: containerRegistry.loginServer,
     appInsightsInstrumentationKey: appInsights.instrumentationKey,
     appInsightsConnectionString: appInsights.connectionString,

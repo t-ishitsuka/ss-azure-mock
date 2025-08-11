@@ -45,27 +45,61 @@ jobs:
           ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
         platforms: linux/amd64
 
-    - name: Update Container Instance
+    - name: Update Container Instance in VNet
       run: |
-        # Container Instances を新しいイメージで再作成（VNet内でも動作）
+        # VNet内のContainer Instancesを新しいイメージで更新
+        # 既存のContainer Instancesを削除
+        az container delete \
+          --name ss-azure-staging-container-vnet \
+          --resource-group ss-azure-staging-rg \
+          --yes \
+          --no-wait || true
+        
+        # 少し待機（削除処理のため）
+        sleep 10
+        
+        # VNet内にContainer Instancesを作成
         az container create \
           --resource-group ss-azure-staging-rg \
-          --name ss-azure-staging-container \
+          --name ss-azure-staging-container-vnet \
           --image ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} \
           --registry-login-server ${{ env.REGISTRY_NAME }}.azurecr.io \
           --registry-username ${{ secrets.REGISTRY_USERNAME }} \
           --registry-password ${{ secrets.REGISTRY_PASSWORD }} \
+          --subnet ${{ secrets.VNET_SUBNET_ID }} \
           --os-type Linux \
           --cpu 1 \
           --memory 1.5 \
           --restart-policy Always \
-          --dns-name-label ss-azure-staging \
+          --ip-address Private \
           --ports 80 \
           --environment-variables \
             NODE_ENV=production \
             PORT=80 \
             DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+            APPLICATIONINSIGHTS_CONNECTION_STRING="${{ secrets.APP_INSIGHTS_CONNECTION_STRING }}" \
           --location japaneast \
           --no-wait \
           || echo "Container update initiated"
+      continue-on-error: true
+    
+    - name: Update Application Gateway Backend
+      run: |
+        # Container InstancesのプライベートIPを取得
+        CONTAINER_IP=$(az container show \
+          --name ss-azure-staging-container-vnet \
+          --resource-group ss-azure-staging-rg \
+          --query "ipAddress.ip" -o tsv) || echo "10.0.1.5"
+        
+        echo "Container IP: $CONTAINER_IP"
+        
+        # Application Gatewayのバックエンドプールを更新
+        if [ ! -z "$CONTAINER_IP" ]; then
+          az network application-gateway address-pool update \
+            --gateway-name ss-azure-staging-appgw \
+            --resource-group ss-azure-staging-rg \
+            --name backend-pool \
+            --servers $CONTAINER_IP \
+            --no-wait || true
+        fi
       continue-on-error: true

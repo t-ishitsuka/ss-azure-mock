@@ -27,7 +27,8 @@ const networkInfra = createNetworkInfrastructure(projectName, location);
 const azureInfra = createAzureInfrastructure(networkInfra);
 
 // Container InstanceのプライベートIPアドレスを取得（Application Gateway用）
-const containerPrivateIP = pulumi.interpolate`10.0.1.4`; // Container InstancesのIPは通常動的に割り当てられる
+// VNet内のContainer InstancesのプライベートIPを使用
+const containerPrivateIP = azureInfra.containerPrivateIP || pulumi.interpolate`10.0.1.4`;
 
 // Application Gatewayの作成（パブリックアクセス用）
 const appGatewayInfra = createAppGatewayInfrastructure(
